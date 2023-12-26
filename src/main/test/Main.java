@@ -18,7 +18,7 @@ public class Main {
 
         while (true) {
             boolean flag = changeThread.flag;
-//            unsafe.loadFence(); //加入读内存屏障
+            unsafe.loadFence(); //加入读内存屏障
             if (flag){
                 System.out.println("detected flag changed");
                 break;
