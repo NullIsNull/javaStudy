@@ -18,7 +18,7 @@ public class Main {
 
         while (true) {
             boolean flag = changeThread.flag;
-            unsafe.loadFence(); //加入读内存屏障
+            unsafe.loadFence(); // 加入读内存屏障
             if (flag){
                 System.out.println("detected flag changed");
                 break;
@@ -39,6 +39,17 @@ public class Main {
             }
             System.out.println("subThread change flag to:" + flag);
             flag = true;
+        }
+    }
+
+    public void foo() {
+        System.out.println("hello");
+    }
+
+    static class Land extends Main {
+        @Override
+        public void foo() {
+
         }
     }
 }
