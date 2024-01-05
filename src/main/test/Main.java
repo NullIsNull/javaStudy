@@ -3,53 +3,50 @@ package main.test;
 import lombok.Getter;
 import sun.misc.Unsafe;
 
+import java.io.Console;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.sql.Time;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-public class Main {
+public class Main extends AbstractQueuedSynchronizer {
 
-    public static void main(String[] args) throws InstantiationException, IllegalAccessException, NoSuchFieldException, InterruptedException {
-        ChangeThread changeThread = new ChangeThread();
-        new Thread(changeThread).start();
+    public static void main(String[] args) {
+        new ThreadPoolExecutor(1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(100));
 
-        Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-        unsafeField.setAccessible(true);
-        Unsafe unsafe = (Unsafe) unsafeField.get(null);
-
-        while (true) {
-            boolean flag = changeThread.flag;
-            unsafe.loadFence(); // 加入读内存屏障
-            if (flag){
-                System.out.println("detected flag changed");
-                break;
-            }
-        }
-        System.out.println("main thread end");
+        Main main = new Main();
+        int state = main.getState();
     }
 
-    @Getter
-    static class ChangeThread implements Runnable {
-        boolean flag = false;
+    static class Worker implements Runnable {
+        private final CyclicBarrier barrier;
+
+        public Worker(CyclicBarrier barrier) {
+            this.barrier = barrier;
+        }
+
         @Override
         public void run() {
             try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
+                System.out.println("Thread is waiting at the barrier1.");
+                TimeUnit.SECONDS.sleep(10);
+                barrier.await(); // 等待其他线程到达屏障点
+                System.out.println("Thread has passed the barrier1.");
+
+                System.out.println("Thread is waiting at the barrier2.");
+                TimeUnit.SECONDS.sleep(10);
+                barrier.await();
+                System.out.println("Thread has passed the barrier2.");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("subThread change flag to:" + flag);
-            flag = true;
         }
     }
 
-    public void foo() {
-        System.out.println("hello");
-    }
-
-    static class Land extends Main {
-        @Override
-        public void foo() {
-
-        }
-    }
 }
