@@ -27,7 +27,12 @@ public class Solution378 {
         //1
         int[][] sides = new int[][]{{0,1}, {0,-1}, {1, 0}, {-1, 0}};
         //2
-        PriorityQueue<int[]> heap = new PriorityQueue<>((o1, o2) -> matrix[o1[0]][o1[1]] - matrix[o2[0]][o2[1]]);
+        PriorityQueue<int[]> heap = new PriorityQueue<>(new Comparator<int[]>() {
+            @Override
+            public int compare(int[] o1, int[] o2) {
+                return matrix[o1[0]][o1[1]] - matrix[o2[0]][o2[1]];
+            }
+        });
         int m = matrix.length;
         int n = matrix[0].length;
         int[][] visited = new int[m][n];
